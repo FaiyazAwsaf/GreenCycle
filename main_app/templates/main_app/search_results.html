@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        .container {
+            width: 90%;
+            margin: auto;
+            overflow: hidden;
+            padding: 20px;
+        }
+        header {
+            background: #50b3a2;
+            color: white;
+            padding: 20px 0;
+            text-align: center;
+        }
+        .content {
+            margin-top: 20px;
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .nav-links {
+            margin-top: 20px;
+            text-align: center;
+        }
+        .nav-links a {
+            display: inline-block;
+            margin: 0 10px;
+            padding: 10px 15px;
+            background: #50b3a2;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background 0.3s;
+        }
+        .nav-links a:hover {
+            background: #3a8a7e;
+        }
+        .section-title {
+            color: #50b3a2;
+            border-bottom: 2px solid #50b3a2;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        .items-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        .item-card {
+            background: white;
+            border-radius: 5px;
+            box-shadow: 0 0 5px rgba(0,0,0,0.1);
+            overflow: hidden;
+            transition: transform 0.3s;
+        }
+        .item-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .item-image {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+        }
+        .item-info {
+            padding: 15px;
+        }
+        .item-title {
+            margin-top: 0;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        .item-category {
+            display: inline-block;
+            background: #e0f7fa;
+            color: #00838f;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 0.8em;
+            margin-bottom: 10px;
+        }
+        .item-location {
+            color: #666;
+            font-size: 0.9em;
+            margin-bottom: 10px;
+        }
+        .search-form {
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .search-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        .search-field {
+            flex: 1;
+            min-width: 200px;
+        }
+        .search-field label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .search-field input,
+        .search-field select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .search-button {
+            background: #50b3a2;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .search-button:hover {
+            background: #3a8a7e;
+        }
+        .results-info {
+            margin-bottom: 20px;
+            color: #666;
+        }
+        .empty-results {
+            text-align: center;
+            padding: 40px 0;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Search Results</h1>
+        </div>
+    </header>
+    
+    <div class="container">
+        <div class="nav-links">
+            <a href="{% url 'home' %}">Home</a>
+            <a href="{% url 'map' %}">Recycling Map</a>
+            <a href="{% url 'marketplace' %}">Marketplace</a>
+            {% if user.is_authenticated %}
+                <a href="{% url 'my_items' %}">My Items</a>
+                <a href="{% url 'user_preferences' %}">My Preferences</a>
+            {% endif %}
+        </div>
+        
+        <div class="content">
+            <h2 class="section-title">Search Reusable Items</h2>
+            
+            <div class="search-form">
+                <form action="{% url 'search_items' %}" method="get">
+                    <div class="search-row">
+                        <div class="search-field">
+                            <label for="q">Search Term</label>
+                            <input type="text" id="q" name="q" value="{{ query }}" placeholder="Search by title or description">
+                        </div>
+                        
+                        <div class="search-field">
+                            <label for="category">Category</label>
+                            <select id="category" name="category">
+                                <option value="">All Categories</option>
+                                {% for category in categories %}
+                                    <option value="{{ category.id }}" {% if category.id|stringformat:"i" == category_id %}selected{% endif %}>{{ category.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="search-row">
+                        <div class="search-field">
+                            <label for="condition">Condition</label>
+                            <select id="condition" name="condition">
+                                <option value="">Any Condition</option>
+                                <option value="New" {% if condition == 'New' %}selected{% endif %}>New</option>
+                                <option value="Like New" {% if condition == 'Like New' %}selected{% endif %}>Like New</option>
+                                <option value="Good" {% if condition == 'Good' %}selected{% endif %}>Good</option>
+                                <option value="Fair" {% if condition == 'Fair' %}selected{% endif %}>Fair</option>
+                                <option value="Poor" {% if condition == 'Poor' %}selected{% endif %}>Poor</option>
+                            </select>
+                        </div>
+                        
+                        <div class="search-field">
+                            <label for="location">Location</label>
+                            <input type="text" id="location" name="location" value="{{ location }}" placeholder="Search by location">
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="search-button">Search</button>
+                </form>
+            </div>
+            
+            <div class="results-info">
+                {% if items %}
+                    <p>Found {{ items|length }} item(s) matching your search criteria.</p>
+                {% else %}
+                    <p>No items found matching your search criteria.</p>
+                {% endif %}
+            </div>
+            
+            {% if items %}
+                <div class="items-grid">
+                    {% for item in items %}
+                        <div class="item-card">
+                            <a href="{% url 'item_detail' item.id %}">
+                                {% if item.image %}
+                                    <img src="{{ item.image.url }}" alt="{{ item.title }}" class="item-image">
+                                {% else %}
+                                    <div class="item-image" style="background-color: #eee; display: flex; align-items: center; justify-content: center;">
+                                        <span>No Image</span>
+                                    </div>
+                                {% endif %}
+                                <div class="item-info">
+                                    <h3 class="item-title">{{ item.title }}</h3>
+                                    <span class="item-category">{{ item.category.name }}</span>
+                                    <p class="item-location">{{ item.location }}</p>
+                                    <p>Condition: {{ item.condition }}</p>
+                                </div>
+                            </a>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-results">
+                    <h3>No items found</h3>
+                    <p>Try adjusting your search criteria or <a href="{% url 'marketplace' %}">browse all items</a>.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>

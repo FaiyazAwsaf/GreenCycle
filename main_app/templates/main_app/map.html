@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recycling Centers Map</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous" />
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        .container {
+            width: 90%;
+            margin: auto;
+            overflow: hidden;
+            padding: 20px;
+        }
+        header {
+            background: #50b3a2;
+            color: white;
+            padding: 20px 0;
+            text-align: center;
+        }
+        .content {
+            margin-top: 20px;
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        #map {
+            height: 500px;
+            width: 100%;
+            border-radius: 5px;
+        }
+        .map-container {
+            margin-top: 20px;
+        }
+        .center-info {
+            padding: 10px;
+            background: white;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .center-info h3 {
+            margin-top: 0;
+            color: #50b3a2;
+        }
+        .nav-links {
+            margin-top: 20px;
+            text-align: center;
+        }
+        .nav-links a {
+            display: inline-block;
+            margin: 0 10px;
+            padding: 10px 15px;
+            background: #50b3a2;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background 0.3s;
+        }
+        .nav-links a:hover {
+            background: #3a8a7e;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Recycling Centers Map</h1>
+        </div>
+    </header>
+    
+    <div class="container">
+        <div class="nav-links">
+            <a href="{% url 'home' %}">Home</a>
+            <a href="{% url 'map' %}">Map</a>
+        </div>
+        
+        <div class="content">
+            <h2>Find Recycling Centers Near You</h2>
+            <p>Use the map below to locate recycling centers in your area. Click on a marker to see more information about each center.</p>
+            
+            <div class="map-container">
+                <div id="map"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous"></script>
+    
+    <script>
+        // Initialize the map
+        var map = L.map('map').setView([40.7128, -74.0060], 12); // Default to NYC coordinates
+        
+        // Add OpenStreetMap tiles
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+        
+        // Get recycling centers data from Django template
+        var recyclingCenters = [
+            {% for center in centers %}
+                {
+                    "name": "{{ center.name|escapejs }}",
+                    "address": "{{ center.address|escapejs }}",
+                    "city": "{{ center.city|escapejs }}",
+                    "state": "{{ center.state|escapejs }}",
+                    "zip": "{{ center.zip_code|escapejs }}",
+                    "lat": {{ center.latitude|default:"0" }},
+                    "lng": {{ center.longitude|default:"0" }},
+                    "phone": "{{ center.phone|default:'N/A'|escapejs }}",
+                    "website": "{{ center.website|default:'#'|escapejs }}",
+                    "materials": "{{ center.materials_accepted|default:'Information not available'|escapejs }}",
+                    "hours": "{{ center.hours_of_operation|default:'Information not available'|escapejs }}"
+                }{% if not forloop.last %},{% endif %}
+            {% empty %}
+                /* Empty array if no centers */
+            {% endfor %}
+        ];
+        
+        // Add markers for each recycling center
+        recyclingCenters.forEach(function(center) {
+            var marker = L.marker([center.lat, center.lng]).addTo(map);
+            
+            // Create popup content
+            var popupContent = `
+                <div class="center-info">
+                    <h3>${center.name}</h3>
+                    <p><strong>Address:</strong> ${center.address}, ${center.city}, ${center.state} ${center.zip}</p>
+                    <p><strong>Phone:</strong> ${center.phone}</p>
+                    <p><strong>Materials Accepted:</strong> ${center.materials}</p>
+                    <p><strong>Hours:</strong> ${center.hours}</p>
+                    ${center.website !== '#' ? `<p><a href="${center.website}" target="_blank">Visit Website</a></p>` : ''}
+                </div>
+            `;
+            
+            marker.bindPopup(popupContent);
+        });
+        
+        // If we have centers, fit the map to show all markers
+        if (recyclingCenters.length > 0) {
+            var bounds = [];
+            recyclingCenters.forEach(function(center) {
+                bounds.push([center.lat, center.lng]);
+            });
+            map.fitBounds(bounds);
+        }
+        
+        // Try to get user's location
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(function(position) {
+                var userLat = position.coords.latitude;
+                var userLng = position.coords.longitude;
+                
+                // Add a marker for user's location
+                var userMarker = L.marker([userLat, userLng], {
+                    icon: L.divIcon({
+                        className: 'user-location',
+                        html: '<div style="background-color: blue; width: 10px; height: 10px; border-radius: 50%; border: 2px solid white;"></div>',
+                        iconSize: [15, 15]
+                    })
+                }).addTo(map);
+                
+                userMarker.bindPopup("Your Location").openPopup();
+                
+                // Center map on user's location if no centers are available
+                if (recyclingCenters.length === 0) {
+                    map.setView([userLat, userLng], 13);
+                }
+            });
+        }
+    </script>
+</body>
+</html>

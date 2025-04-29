@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        .container {
+            width: 90%;
+            margin: auto;
+            overflow: hidden;
+            padding: 20px;
+        }
+        header {
+            background: #50b3a2;
+            color: white;
+            padding: 20px 0;
+            text-align: center;
+        }
+        .content {
+            margin-top: 20px;
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .nav-links {
+            margin-top: 20px;
+            text-align: center;
+        }
+        .nav-links a {
+            display: inline-block;
+            margin: 0 10px;
+            padding: 10px 15px;
+            background: #50b3a2;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background 0.3s;
+        }
+        .nav-links a:hover {
+            background: #3a8a7e;
+        }
+        .item-detail {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        .item-image-container {
+            flex: 1;
+            min-width: 300px;
+        }
+        .item-image {
+            width: 100%;
+            max-height: 400px;
+            object-fit: cover;
+            border-radius: 5px;
+        }
+        .item-info {
+            flex: 2;
+            min-width: 300px;
+        }
+        .item-title {
+            color: #333;
+            margin-top: 0;
+            margin-bottom: 15px;
+        }
+        .item-meta {
+            margin-bottom: 20px;
+        }
+        .item-category {
+            display: inline-block;
+            background: #e0f7fa;
+            color: #00838f;
+            padding: 5px 10px;
+            border-radius: 3px;
+            font-size: 0.9em;
+            margin-right: 10px;
+        }
+        .item-condition {
+            display: inline-block;
+            background: #f1f8e9;
+            color: #558b2f;
+            padding: 5px 10px;
+            border-radius: 3px;
+            font-size: 0.9em;
+        }
+        .item-description {
+            margin-bottom: 20px;
+            line-height: 1.8;
+        }
+        .item-owner {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .contact-button {
+            display: inline-block;
+            background: #50b3a2;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background 0.3s;
+        }
+        .contact-button:hover {
+            background: #3a8a7e;
+        }
+        .section-title {
+            color: #50b3a2;
+            border-bottom: 2px solid #50b3a2;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        .similar-items {
+            margin-top: 40px;
+        }
+        .items-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        .item-card {
+            background: white;
+            border-radius: 5px;
+            box-shadow: 0 0 5px rgba(0,0,0,0.1);
+            overflow: hidden;
+            transition: transform 0.3s;
+        }
+        .item-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .item-card-image {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+        }
+        .item-card-info {
+            padding: 15px;
+        }
+        .item-card-title {
+            margin-top: 0;
+            margin-bottom: 10px;
+            color: #333;
+            font-size: 1.1em;
+        }
+        .action-buttons {
+            margin-top: 20px;
+        }
+        .action-buttons a {
+            display: inline-block;
+            margin-right: 10px;
+            padding: 8px 15px;
+            background: #50b3a2;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background 0.3s;
+        }
+        .action-buttons a:hover {
+            background: #3a8a7e;
+        }
+        .delete-button {
+            background: #f44336 !important;
+        }
+        .delete-button:hover {
+            background: #d32f2f !important;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Reusable Items Marketplace</h1>
+        </div>
+    </header>
+    
+    <div class="container">
+        <div class="nav-links">
+            <a href="{% url 'home' %}">Home</a>
+            <a href="{% url 'map' %}">Recycling Map</a>
+            <a href="{% url 'marketplace' %}">Marketplace</a>
+            {% if user.is_authenticated %}
+                <a href="{% url 'my_items' %}">My Items</a>
+                <a href="{% url 'user_preferences' %}">My Preferences</a>
+            {% endif %}
+        </div>
+        
+        <div class="content">
+            <div class="item-detail">
+                <div class="item-image-container">
+                    {% if item.image %}
+                        <img src="{{ item.image.url }}" alt="{{ item.title }}" class="item-image">
+                    {% else %}
+                        <div class="item-image" style="background-color: #eee; height: 300px; display: flex; align-items: center; justify-content: center;">
+                            <span>No Image Available</span>
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <div class="item-info">
+                    <h1 class="item-title">{{ item.title }}</h1>
+                    
+                    <div class="item-meta">
+                        <span class="item-category">{{ item.category.name }}</span>
+                        <span class="item-condition">Condition: {{ item.condition }}</span>
+                    </div>
+                    
+                    <div class="item-description">
+                        <h3>Description</h3>
+                        <p>{{ item.description }}</p>
+                    </div>
+                    
+                    <div class="item-meta">
+                        <p><strong>Location:</strong> {{ item.location }}</p>
+                        <p><strong>Posted:</strong> {{ item.created_at|date:"F j, Y" }}</p>
+                    </div>
+                    
+                    <div class="item-owner">
+                        <h3>Item Owner</h3>
+                        <p>{{ item.owner.username }}</p>
+                        
+                        {% if user.is_authenticated and user != item.owner %}
+                            <a href="#" class="contact-button">Contact Owner</a>
+                        {% elif not user.is_authenticated %}
+                            <a href="{% url 'login' %}" class="contact-button">Login to Contact Owner</a>
+                        {% endif %}
+                    </div>
+                    
+                    {% if user == item.owner %}
+                        <div class="action-buttons">
+                            <a href="{% url 'update_item' item.id %}">Edit Item</a>
+                            <a href="{% url 'delete_item' item.id %}" class="delete-button">Delete Item</a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            {% if similar_items %}
+            <div class="similar-items">
+                <h2 class="section-title">Similar Items</h2>
+                <div class="items-grid">
+                    {% for similar_item in similar_items %}
+                        <div class="item-card">
+                            <a href="{% url 'item_detail' similar_item.id %}">
+                                {% if similar_item.image %}
+                                    <img src="{{ similar_item.image.url }}" alt="{{ similar_item.title }}" class="item-card-image">
+                                {% else %}
+                                    <div class="item-card-image" style="background-color: #eee; display: flex; align-items: center; justify-content: center;">
+                                        <span>No Image</span>
+                                    </div>
+                                {% endif %}
+                                <div class="item-card-info">
+                                    <h3 class="item-card-title">{{ similar_item.title }}</h3>
+                                    <span class="item-category">{{ similar_item.category.name }}</span>
+                                    <p>Condition: {{ similar_item.condition }}</p>
+                                </div>
+                            </a>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>

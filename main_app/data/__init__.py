@@ -1,0 +1,1 @@
+# This directory will store all JSON data files for the application

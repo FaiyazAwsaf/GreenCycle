@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        .container {
+            width: 90%;
+            margin: auto;
+            overflow: hidden;
+            padding: 20px;
+        }
+        header {
+            background: #50b3a2;
+            color: white;
+            padding: 20px 0;
+            text-align: center;
+        }
+        .content {
+            margin-top: 20px;
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .nav-links {
+            margin-top: 20px;
+            text-align: center;
+        }
+        .nav-links a {
+            display: inline-block;
+            margin: 0 10px;
+            padding: 10px 15px;
+            background: #50b3a2;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background 0.3s;
+        }
+        .nav-links a:hover {
+            background: #3a8a7e;
+        }
+        .section {
+            margin-bottom: 30px;
+        }
+        .section-title {
+            color: #50b3a2;
+            border-bottom: 2px solid #50b3a2;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        .items-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        .item-card {
+            background: white;
+            border-radius: 5px;
+            box-shadow: 0 0 5px rgba(0,0,0,0.1);
+            overflow: hidden;
+            transition: transform 0.3s;
+        }
+        .item-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .item-image {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+        }
+        .item-info {
+            padding: 15px;
+        }
+        .item-title {
+            margin-top: 0;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        .item-category {
+            display: inline-block;
+            background: #e0f7fa;
+            color: #00838f;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 0.8em;
+            margin-bottom: 10px;
+        }
+        .item-location {
+            color: #666;
+            font-size: 0.9em;
+            margin-bottom: 10px;
+        }
+        .search-bar {
+            display: flex;
+            margin-bottom: 20px;
+        }
+        .search-bar input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px 0 0 5px;
+        }
+        .search-bar button {
+            padding: 10px 15px;
+            background: #50b3a2;
+            color: white;
+            border: none;
+            border-radius: 0 5px 5px 0;
+            cursor: pointer;
+        }
+        .search-bar button:hover {
+            background: #3a8a7e;
+        }
+        .action-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        .action-buttons a {
+            padding: 10px 15px;
+            background: #50b3a2;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background 0.3s;
+        }
+        .action-buttons a:hover {
+            background: #3a8a7e;
+        }
+        .categories-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .category-tag {
+            background: #e0f7fa;
+            color: #00838f;
+            padding: 5px 10px;
+            border-radius: 3px;
+            text-decoration: none;
+            transition: background 0.3s;
+        }
+        .category-tag:hover {
+            background: #b2ebf2;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Reusable Items Marketplace</h1>
+        </div>
+    </header>
+    
+    <div class="container">
+        <div class="nav-links">
+            <a href="{% url 'home' %}">Home</a>
+            <a href="{% url 'map' %}">Recycling Map</a>
+            <a href="{% url 'marketplace' %}">Marketplace</a>
+            {% if user.is_authenticated %}
+                <a href="{% url 'my_items' %}">My Items</a>
+                <a href="{% url 'user_preferences' %}">My Preferences</a>
+            {% endif %}
+        </div>
+        
+        <div class="content">
+            <form action="{% url 'search_items' %}" method="get" class="search-bar">
+                <input type="text" name="q" placeholder="Search for items..." value="{{ request.GET.q }}">
+                <button type="submit">Search</button>
+            </form>
+            
+            <div class="categories-list">
+                <strong>Categories:</strong>
+                {% for category in categories %}
+                    <a href="{% url 'search_items' %}?category={{ category.id }}" class="category-tag">{{ category.name }}</a>
+                {% endfor %}
+            </div>
+            
+            <div class="action-buttons">
+                {% if user.is_authenticated %}
+                    <a href="{% url 'add_item' %}">Add New Item</a>
+                {% else %}
+                    <a href="{% url 'login' %}">Login to Add Items</a>
+                {% endif %}
+            </div>
+            
+            {% if recommended_items %}
+            <div class="section">
+                <h2 class="section-title">Recommended For You</h2>
+                <div class="items-grid">
+                    {% for item in recommended_items %}
+                        <div class="item-card">
+                            <a href="{% url 'item_detail' item.id %}">
+                                {% if item.image %}
+                                    <img src="{{ item.image.url }}" alt="{{ item.title }}" class="item-image">
+                                {% else %}
+                                    <div class="item-image" style="background-color: #eee; display: flex; align-items: center; justify-content: center;">
+                                        <span>No Image</span>
+                                    </div>
+                                {% endif %}
+                                <div class="item-info">
+                                    <h3 class="item-title">{{ item.title }}</h3>
+                                    <span class="item-category">{{ item.category.name }}</span>
+                                    <p class="item-location">{{ item.location }}</p>
+                                    <p>Condition: {{ item.condition }}</p>
+                                </div>
+                            </a>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+            
+            {% if featured_items %}
+            <div class="section">
+                <h2 class="section-title">Featured Items</h2>
+                <div class="items-grid">
+                    {% for item in featured_items %}
+                        <div class="item-card">
+                            <a href="{% url 'item_detail' item.id %}">
+                                {% if item.image %}
+                                    <img src="{{ item.image.url }}" alt="{{ item.title }}" class="item-image">
+                                {% else %}
+                                    <div class="item-image" style="background-color: #eee; display: flex; align-items: center; justify-content: center;">
+                                        <span>No Image</span>
+                                    </div>
+                                {% endif %}
+                                <div class="item-info">
+                                    <h3 class="item-title">{{ item.title }}</h3>
+                                    <span class="item-category">{{ item.category.name }}</span>
+                                    <p class="item-location">{{ item.location }}</p>
+                                    <p>Condition: {{ item.condition }}</p>
+                                </div>
+                            </a>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+            
+            <div class="section">
+                <h2 class="section-title">Recent Items</h2>
+                <div class="items-grid">
+                    {% for item in recent_items %}
+                        <div class="item-card">
+                            <a href="{% url 'item_detail' item.id %}">
+                                {% if item.image %}
+                                    <img src="{{ item.image.url }}" alt="{{ item.title }}" class="item-image">
+                                {% else %}
+                                    <div class="item-image" style="background-color: #eee; display: flex; align-items: center; justify-content: center;">
+                                        <span>No Image</span>
+                                    </div>
+                                {% endif %}
+                                <div class="item-info">
+                                    <h3 class="item-title">{{ item.title }}</h3>
+                                    <span class="item-category">{{ item.category.name }}</span>
+                                    <p class="item-location">{{ item.location }}</p>
+                                    <p>Condition: {{ item.condition }}</p>
+                                </div>
+                            </a>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

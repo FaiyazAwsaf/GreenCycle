@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        .container {
+            width: 90%;
+            margin: auto;
+            overflow: hidden;
+            padding: 20px;
+        }
+        header {
+            background: #50b3a2;
+            color: white;
+            padding: 20px 0;
+            text-align: center;
+        }
+        .content {
+            margin-top: 20px;
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .nav-links {
+            margin-top: 20px;
+            text-align: center;
+        }
+        .nav-links a {
+            display: inline-block;
+            margin: 0 10px;
+            padding: 10px 15px;
+            background: #50b3a2;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background 0.3s;
+        }
+        .nav-links a:hover {
+            background: #3a8a7e;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .form-group input[type="text"],
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        .form-group textarea {
+            height: 150px;
+        }
+        .current-image {
+            margin-bottom: 10px;
+        }
+        .current-image img {
+            max-width: 200px;
+            max-height: 200px;
+            border-radius: 5px;
+        }
+        .submit-button {
+            display: inline-block;
+            background: #50b3a2;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.3s;
+        }
+        .submit-button:hover {
+            background: #3a8a7e;
+        }
+        .error-message {
+            background: #ffebee;
+            color: #c62828;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Update Item</h1>
+        </div>
+    </header>
+    
+    <div class="container">
+        <div class="nav-links">
+            <a href="{% url 'home' %}">Home</a>
+            <a href="{% url 'map' %}">Recycling Map</a>
+            <a href="{% url 'marketplace' %}">Marketplace</a>
+            <a href="{% url 'my_items' %}">My Items</a>
+            <a href="{% url 'user_preferences' %}">My Preferences</a>
+        </div>
+        
+        <div class="content">
+            <h2>Update Your Marketplace Item</h2>
+            <p>Edit the information below to update your item.</p>
+            
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="error-message">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+            
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    <label for="title">Title *</label>
+                    <input type="text" id="title" name="title" value="{{ item.title }}" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="description">Description *</label>
+                    <textarea id="description" name="description" required>{{ item.description }}</textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="category">Category *</label>
+                    <select id="category" name="category" required>
+                        {% for category in categories %}
+                            <option value="{{ category.id }}" {% if category.id == item.category.id %}selected{% endif %}>{{ category.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="condition">Condition *</label>
+                    <select id="condition" name="condition" required>
+                        <option value="New" {% if item.condition == 'New' %}selected{% endif %}>New</option>
+                        <option value="Like New" {% if item.condition == 'Like New' %}selected{% endif %}>Like New</option>
+                        <option value="Good" {% if item.condition == 'Good' %}selected{% endif %}>Good</option>
+                        <option value="Fair" {% if item.condition == 'Fair' %}selected{% endif %}>Fair</option>
+                        <option value="Poor" {% if item.condition == 'Poor' %}selected{% endif %}>Poor</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="location">Location *</label>
+                    <input type="text" id="location" name="location" value="{{ item.location }}" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="status">Status *</label>
+                    <select id="status" name="status" required>
+                        <option value="available" {% if item.status == 'available' %}selected{% endif %}>Available</option>
+                        <option value="pending" {% if item.status == 'pending' %}selected{% endif %}>Pending Exchange</option>
+                        <option value="exchanged" {% if item.status == 'exchanged' %}selected{% endif %}>Exchanged</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="image">Image</label>
+                    {% if item.image %}
+                        <div class="current-image">
+                            <p>Current image:</p>
+                            <img src="{{ item.image.url }}" alt="{{ item.title }}">
+                        </div>
+                    {% endif %}
+                    <p>Upload a new image (leave empty to keep current image):</p>
+                    <input type="file" id="image" name="image" accept="image/*">
+                </div>
+                
+                <button type="submit" class="submit-button">Update Item</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

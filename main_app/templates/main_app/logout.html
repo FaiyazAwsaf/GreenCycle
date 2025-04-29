@@ -1,0 +1,12 @@
+{% extends 'main_app/base.html' %}
+
+{% block content %}
+<div class="container">
+    <div class="message-container">
+        <h2>Logged Out</h2>
+        <p>You have been successfully logged out.</p>
+        <a href="{% url 'home' %}" class="btn btn-primary">Return to Home</a>
+        <a href="{% url 'login' %}" class="btn btn-secondary">Login Again</a>
+    </div>
+</div>
+{% endblock %}
